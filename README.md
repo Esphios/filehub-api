@@ -1,1 +1,1 @@
-# filehub-api
+# FileHub
