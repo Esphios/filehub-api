@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     /* Visit https://aka.ms/tsconfig to read more about this file */
 
     /* Projects */
@@ -109,6 +112,6 @@
     "rootDir": "./src",
     "moduleResolution": "node",
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/index.ts"]
   
 }

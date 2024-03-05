@@ -102,7 +102,7 @@ export const db = {
         fileId: number
     ): Promise<QueryResult> => {
 
-        return await query('SELECT encode(file_content, base64) FROM filehub.files WHERE file_id = $1;', [fileId]);
+        return await query('SELECT filename, file_content as content FROM filehub.files WHERE file_id = $1;', [fileId]);
     },
     getParentDirectories: async (
         dirId: number

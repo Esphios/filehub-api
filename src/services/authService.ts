@@ -54,7 +54,8 @@ export const loginUser = async (
             email: email,
             name: result.rows[0].name,
             role: result.rows[0].role_id,
-            id: result.rows[0].user_id
+            id: result.rows[0].user_id,
+            rootDir: result.rows[0].root_dir
         });
     } else {
         return null;
@@ -108,11 +109,11 @@ export const resetPassword = async (token: string, newPassword: string): Promise
 
 const comparePermissions = (providerPermissions: any, receiverPermissions: any): boolean => {
     if (
-        (providerPermissions.rows[0].can_share_out === false) ||
-        (providerPermissions.rows[0].can_read_out === false && receiverPermissions.canRead) ||
-        (providerPermissions.rows[0].can_write_out === false && receiverPermissions.canWrite) ||
-        (providerPermissions.rows[0].can_delete_out === false && receiverPermissions.canDelete) ||
-        (providerPermissions.rows[0].is_recursive_out === false && receiverPermissions.isRecursive)
+        (providerPermissions.can_share_out === false) ||
+        (providerPermissions.can_read_out === false && receiverPermissions.canRead) ||
+        (providerPermissions.can_write_out === false && receiverPermissions.canWrite) ||
+        (providerPermissions.can_delete_out === false && receiverPermissions.canDelete) ||
+        (providerPermissions.is_recursive_out === false && receiverPermissions.isRecursive)
     ) return false;
     return true;
 }
@@ -128,7 +129,7 @@ export const giveFilePermission = async (
     isRecursive: boolean,
 ): Promise<any> => {
     try {
-        const giverPermissions = await db.getPermissionForFile(providerId, fileId);
+        const giverPermissions = (await db.getPermissionForFile(providerId, fileId)).rows[0];
         const receiverPermissions = { canRead, canWrite, canShare, canDelete, isRecursive };
 
         if (!comparePermissions(giverPermissions, receiverPermissions))
