@@ -10,16 +10,7 @@ const app = express();
 
 const options = {
   swaggerDefinition: swaggerJson,
-  apis: ['**/*.ts'],
-  securityDefinitions: {
-    bearerAuth: {
-      type: 'http',
-      name: 'Authorization',
-      scheme: 'bearer',
-      in: 'header',
-      bearerFormat: "JWT"
-    },
-  }
+  apis: ['**/*.ts']
 };
 
 const specs = swaggerJsdoc(options);

@@ -114,7 +114,25 @@ export const db = {
         userId: number
     ): Promise<QueryResult> => {
 
-        return await query('SELECT * FROM filehub.directories WHERE directory_id = (select root_dir FROM filehub.users WHERE user_id = $1);', [userId]);
+        return await query('SELECT * FROM filehub.directories WHERE directory_id = (select root_dir FROM filehub.users WHERE user_id = $1) AND disabled_at IS null;', [userId]);
+    },
+    getDirectory: async (
+        dirId: number
+    ): Promise<QueryResult> => {
+
+        return await query('SELECT * FROM filehub.directories WHERE directory_id = $1 AND disabled_at IS null;', [dirId]);
+    },
+    getFile: async (
+        fileId: number
+    ): Promise<QueryResult> => {
+
+        return await query('SELECT * FROM filehub.files WHERE file_id = $1 AND disabled_at IS null;', [fileId]);
+    },
+    getUser: async (
+        userId: number
+    ): Promise<QueryResult> => {
+
+        return await query('SELECT * FROM filehub.users WHERE user_id = $1 AND disabled_at IS null;', [userId]);
     },
 
     createDirectory: async (
@@ -164,4 +182,58 @@ export const db = {
             [userId, directoryId, canRead, canWrite, canShare, canDelete, isRecursive]
         );
     },
+    updateUser: async (
+        userId: number,
+        name: string,
+        email: string,
+        password: string,
+        roleId: number,
+        rootDir: number | null
+    ): Promise<QueryResult> => {
+        return await query(
+            `UPDATE filehub.users
+           SET name = $1, email = $2, password = $3, role_id = $4, root_dir = $5, updated_at = CURRENT_TIMESTAMP
+           WHERE user_id = $6`,
+            [name, email, password, roleId, rootDir, userId]
+        );
+    },
+    updateFile: async (
+        fileId: number,
+        filename: string,
+        directoryId: number | null,
+        fileContent: Buffer
+    ): Promise<QueryResult> => {
+        return await query(
+            `UPDATE filehub.files
+           SET filename = $1, directory_id = $2, file_content = $3, updated_at = CURRENT_TIMESTAMP
+           WHERE file_id = $4`,
+            [filename, directoryId, fileContent, fileId]
+        );
+    },
+    updateDirectory: async (
+        directoryId: number,
+        directoryName: string,
+        parentDirectoryId: number | null
+    ): Promise<QueryResult> => {
+        return await query(
+            `UPDATE filehub.directories
+           SET directory_name = $1, parent_directory_id = $2, updated_at = CURRENT_TIMESTAMP
+           WHERE directory_id = $3`,
+            [directoryName, parentDirectoryId, directoryId]
+        );
+    },
+    disableFile: async (fileId: number): Promise<QueryResult> => {
+        return await query(
+            `UPDATE filehub.files
+           SET disabled_at = CURRENT_TIMESTAMP
+           WHERE file_id = $1`,
+            [fileId]
+        );
+    },
+    disableDirectory: async (directoryId: number): Promise<QueryResult> => {
+        return await query('SELECT filehub.disable_directory_recursive($1);', [directoryId]);
+    },
+    disableUser: async (userId: number): Promise<QueryResult> => {
+        return await query('SELECT filehub.disable_user($1);', [userId]);
+    }
 };

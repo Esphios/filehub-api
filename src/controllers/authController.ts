@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { registerUser, loginUser, forgotPassword, resetPassword, giveFilePermission as grantFilePermission, giveDirPermission as grantDirPermission } from '../services/authService';
+import { registerUser, loginUser, forgotPassword, resetPassword, giveFilePermission as grantFilePermission, giveDirPermission as grantDirPermission, updateUser, disableUser } from '../services/authService';
 import { extractTokenFromRequest } from '../services/jwsServices'
 
 export const registerUserController = async (req: Request, res: Response) => {
@@ -113,4 +113,25 @@ export const grantDirPermissionController = async (req: Request, res: Response) 
     console.error(error);
     return res.status(500).json({ message: 'Internal Server Error' });
   }
+};
+export const updateUserController = async (req: Request, res: Response): Promise<any> => {
+    const { userId, name, email, password, roleId, rootDir } = req.body;
+    try {
+        const result = await updateUser(userId, name, email, password, roleId, rootDir);
+        return res.status(result.status).json({ message: result.message });
+    } catch (error) {
+        console.error('Error updating user:', error);
+        return res.status(500).json({ status: 'error', message: 'An error occurred while updating user' });
+    }
+};
+
+export const disableUserController = async (req: Request, res: Response): Promise<any> => {
+    const { userId } = req.params;
+    try {
+        const result = await disableUser(parseInt(userId));
+        return res.status(result.status).json({ message: result.message });
+    } catch (error) {
+        console.error('Error disabling user:', error);
+        return res.status(500).json({ status: 'error', message: 'An error occurred while disabling user' });
+    }
 };

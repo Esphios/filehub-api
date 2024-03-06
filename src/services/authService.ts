@@ -129,11 +129,20 @@ export const giveFilePermission = async (
     isRecursive: boolean,
 ): Promise<any> => {
     try {
+        const user = (await db.getUser(receiverId))?.rows[0];
+        if (user == null)
+            return { status: 404, message: 'User not found' };
+
         const giverPermissions = (await db.getPermissionForFile(providerId, fileId)).rows[0];
         const receiverPermissions = { canRead, canWrite, canShare, canDelete, isRecursive };
 
         if (!comparePermissions(giverPermissions, receiverPermissions))
             return { status: 403, message: 'Insufficient permissions' };
+
+
+        const file = (await db.getFile(fileId)).rows[0];
+        if (file.disabled_at != null)
+            return { status: 404, message: 'File not Found' };
 
         await db.createPermissionForFile(receiverId, fileId, canRead, canWrite, canShare, canDelete, isRecursive);
 
@@ -156,11 +165,19 @@ export const giveDirPermission = async (
     isRecursive: boolean,
 ): Promise<any> => {
     try {
+        const user = (await db.getUser(receiverId))?.rows[0];
+        if (user == null)
+            return { status: 404, message: 'User not found' };
+
         const giverPermissions = await db.getPermissionForDirectory(providerId, dirId);
         const receiverPermissions = { canRead, canWrite, canShare, canDelete, isRecursive };
 
         if (!comparePermissions(giverPermissions, receiverPermissions))
             return { status: 403, message: 'Insufficient permissions' };
+
+        const dir = (await db.getDirectory(dirId)).rows[0];
+        if (dir.disabled_at != null)
+            return { status: 404, message: 'Directory not Found' };
 
         await db.createPermissionForFile(receiverId, dirId, canRead, canWrite, canShare, canDelete, isRecursive);
 
@@ -183,3 +200,29 @@ const generateRandomPassword = (length = 12) => {
 
     return password;
 };
+
+export const updateUser = async (userId: number, name: string, email: string, password: string, roleId: number, rootDir: number ): Promise<any> => {
+    if (userId == null || name == null || email == null || password == null || roleId == null || rootDir == null) {
+        return { status: 400, message: 'All parameters must be provided' };
+    }
+    try {
+        await db.updateUser(userId, name, email, password, roleId, rootDir);
+        return { status: 200, message: 'User updated successfully' };
+    } catch (error) {
+        console.error('Error updating user:', error);
+        return { status: 500, message: 'An error occurred while updating user' };
+    }
+}
+
+export const disableUser = async (userId: number): Promise<any> => {
+    if (userId == null) {
+        return { status: 400, message: 'All parameters must be provided' };
+    }
+    try {
+        await db.disableUser(userId);
+        return { status: 200, message: 'User disabled successfully' };
+    } catch (error) {
+        console.error('Error disabling user:', error);
+        return { status: 500, message: 'An error occurred while updating user' };
+    }
+}

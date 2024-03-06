@@ -6,19 +6,26 @@ import {
   forgotPasswordController, 
   resetPasswordController, 
   grantFilePermissionController, 
-  grantDirPermissionController
+  grantDirPermissionController,
+  disableUserController,
+  updateUserController
  } from '../controllers/authController';
- import {
-  getDirectoryController, getFileController
- } from '../controllers/fileController'
- 
 
 const router = express.Router();
+// Swagger Annotations
+/**
+ * @swagger
+ * tags:
+ *   name: Auth
+ *   description: User management
+ */
+
 /**
  * @swagger
  * /auth/register:
  *   post:
  *     summary: Register a new user
+ *     tags: [Auth]
  *     description: Register a new user with provided credentials
  *     requestBody:
  *       required: true
@@ -54,6 +61,7 @@ router.post('/register', registerUserController);
  * /auth/login:
  *   post:
  *     summary: Log in user
+ *     tags: [Auth]
  *     description: Log in user with provided credentials
  *     requestBody:
  *       required: true
@@ -82,6 +90,7 @@ router.post('/login', loginUserController);
  * /auth/forgot-password:
  *   post:
  *     summary: Send forgot password email
+ *     tags: [Auth]
  *     description: Send an email to the user with instructions to reset the password
  *     requestBody:
  *       required: true
@@ -108,6 +117,7 @@ router.post('/forgot-password', forgotPasswordController);
  * /auth/reset-password:
  *   get:
  *     summary: Reset password
+ *     tags: [Auth]
  *     description: Reset user's password using reset token
  *     parameters:
  *       - in: query
@@ -137,9 +147,10 @@ router.get('/reset-password', resetPasswordController);
  * /auth/grant-file-permission:
  *   post:
  *     summary: Grant file permission
+ *     tags: [Auth]
  *     description: Grant permission to access a file to a user
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -171,9 +182,10 @@ router.post('/grant-file-permission', authorizeUserByToken, grantFilePermissionC
  * /auth/grant-directory-permission:
  *   post:
  *     summary: Grant directory permission
+ *     tags: [Auth]
  *     description: Grant permission to access a directory to a user
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -197,8 +209,58 @@ router.post('/grant-file-permission', authorizeUserByToken, grantFilePermissionC
  *       401:
  *         description: Unauthorized access
  */
-
 router.post('/grant-directory-permission', authorizeUserByToken, grantDirPermissionController);
 
+/**
+ * @swagger
+ * /users/{userId}:
+ *   delete:
+ *     summary: Disable user
+ *     tags: [Auth]
+ *     description: Disable user by user ID
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           format: int64
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: User disabled successfully
+ *       '400':
+ *         description: Bad request
+ *       '500':
+ *         description: Internal server error
+ */ 
+router.delete('/users/:userId', authorizeUserByToken, disableUserController);
+
+/**
+ * @swagger
+ * /users/{userId}:
+ *   put:
+ *     summary: Update user
+ *     tags: [Auth]
+ *     description: Update user by user ID
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           format: int64
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: User updated successfully
+ *       '400':
+ *         description: Bad request
+ *       '500':
+ *         description: Internal server error
+ */
+router.put('/users/:userId', authorizeUserByToken, updateUserController);
 
 export default router;

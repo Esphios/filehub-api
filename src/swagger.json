@@ -4,5 +4,12 @@
     "title": "Your API Title",
     "version": "1.0.0",
     "description": "API Documentation"
-  }
+  },
+  "securitySchemes": {
+    "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+    }
+}
 }
